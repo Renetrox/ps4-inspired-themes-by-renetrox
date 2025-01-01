@@ -52,14 +52,18 @@ process_theme() {
     echo "Processing theme: $REPO_URL"
 
     # Si el tema ya está instalado, buscar actualizaciones automáticamente
-    if [ -d "$DESTINO" ]; then
+    if [ -d "$DESTINO/.git" ]; then
         echo "Theme already installed at $DESTINO."
-        echo "Automatically checking for updates..."
+        echo "Resetting and cleaning local changes..."
         cd "$DESTINO" || exit 1
+        git fetch --all
+        git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+        git clean -fd
+        echo "Pulling latest updates..."
         if git pull; then
             echo "Theme updated successfully!"
         else
-            echo "Error updating the theme. Check your internet connection or Git configuration."
+            echo "Error updating the theme. Check your internet connection or conflicts."
         fi
     else
         # Si el tema no está instalado, clonarlo
@@ -72,7 +76,6 @@ process_theme() {
         fi
     fi
 
-    echo "Setting permissions for $DESTINO..."
     chmod -R 755 "$DESTINO"
     echo "Processing $REPO_URL completed."
 }
