@@ -82,8 +82,8 @@ process_theme() {
 
 # Copiar los archivos de configuración si Pi-Station-X es seleccionado
 copy_customize_script() {
-    PI_STATION_X_DIR="./../.emulationstation/themes/Pi-Station-X"
-    RETROPIE_MENU="./../RetroPie/retropiemenu"
+    PI_STATION_X_DIR="$HOME/.emulationstation/themes/Pi-Station-X"
+    RETROPIE_MENU="$HOME/RetroPie/retropiemenu"
 
     # Scripts a copiar
     SCRIPTS=(
@@ -102,7 +102,7 @@ copy_customize_script() {
             chmod +x "$SCRIPT_DEST"  # Dar permisos de ejecución
             echo "$(basename "$script") copied successfully!"
         else
-            echo "$(basename "$script") not found in $PI_STATION_X_DIR."
+            echo "ERROR: $(basename "$script") not found at $SCRIPT_SOURCE."
         fi
     done
 }
@@ -115,7 +115,7 @@ if [ "$SELECCIONADO" == "All themes" ]; then
         DESTINO=$(echo "${tema}" | awk '{print $2}')
         process_theme "$REPO_URL" "$DESTINO"
 
-        # Si Pi-Station-X fue seleccionado, copiar el script
+        # Si Pi-Station-X fue seleccionado, copiar los scripts
         if [ "$(basename "$DESTINO")" == "Pi-Station-X" ]; then
             copy_customize_script
         fi
@@ -128,7 +128,7 @@ else
         if [ "$(basename "$DESTINO")" == "$SELECCIONADO" ]; then
             process_theme "$REPO_URL" "$DESTINO"
 
-            # Si Pi-Station-X fue seleccionado, copiar el script
+            # Si Pi-Station-X fue seleccionado, copiar los scripts
             if [ "$(basename "$DESTINO")" == "Pi-Station-X" ]; then
                 copy_customize_script
             fi
