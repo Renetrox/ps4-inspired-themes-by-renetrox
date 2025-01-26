@@ -80,21 +80,31 @@ process_theme() {
     echo "Processing $REPO_URL completed."
 }
 
-# Copiar el archivo de configuración si Pi-Station-X es seleccionado
+# Copiar los archivos de configuración si Pi-Station-X es seleccionado
 copy_customize_script() {
-    PI_STATION_X_DIR="$HOME/.emulationstation/themes/Pi-Station-X"
-    SCRIPT_SOURCE="$PI_STATION_X_DIR/layout/Customize Pi Station X.sh"
-    SCRIPT_DEST="$HOME/RetroPie/retropiemenu/Customize Pi Station X.sh"
+    PI_STATION_X_DIR="./../.emulationstation/themes/Pi-Station-X"
+    RETROPIE_MENU="./../RetroPie/retropiemenu"
 
-    echo "Checking if the source script exists at $SCRIPT_SOURCE"
-    if [ -f "$SCRIPT_SOURCE" ]; then
-        echo "Copying Customize Pi Station X.sh to $SCRIPT_DEST..."
-        cp "$SCRIPT_SOURCE" "$SCRIPT_DEST"
-        chmod +x "$SCRIPT_DEST"  # Dar permisos de ejecución
-        echo "Customization script copied successfully!"
-    else
-        echo "Customize Pi Station X.sh not found in $PI_STATION_X_DIR/layout."
-    fi
+    # Scripts a copiar
+    SCRIPTS=(
+        "layout/Customize Pi Station X.sh"
+        "Select Avatar.sh"
+    )
+
+    for script in "${SCRIPTS[@]}"; do
+        SCRIPT_SOURCE="$PI_STATION_X_DIR/$script"
+        SCRIPT_DEST="$RETROPIE_MENU/$(basename "$script")"
+
+        echo "Checking if the source script exists at $SCRIPT_SOURCE"
+        if [ -f "$SCRIPT_SOURCE" ]; then
+            echo "Copying $(basename "$script") to $RETROPIE_MENU..."
+            cp "$SCRIPT_SOURCE" "$SCRIPT_DEST"
+            chmod +x "$SCRIPT_DEST"  # Dar permisos de ejecución
+            echo "$(basename "$script") copied successfully!"
+        else
+            echo "$(basename "$script") not found in $PI_STATION_X_DIR."
+        fi
+    done
 }
 
 # Buscar el tema seleccionado y procesarlo
