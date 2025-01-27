@@ -80,31 +80,25 @@ process_theme() {
     echo "Processing $REPO_URL completed."
 }
 
-# Copiar los archivos de configuración si Pi-Station-X es seleccionado
+# Copiar el archivo PiStation_menu.sh si Pi-Station-X es seleccionado
 copy_customize_script() {
     PI_STATION_X_DIR="$HOME/.emulationstation/themes/Pi-Station-X"
     RETROPIE_MENU="$HOME/RetroPie/retropiemenu"
 
-    # Scripts a copiar
-    SCRIPTS=(
-        "layout/Customize Pi Station X.sh"
-        "Select Avatar.sh"
-    )
+    # Archivo a copiar
+    SCRIPT="layout/PiStation_menu.sh"
+    SCRIPT_SOURCE="$PI_STATION_X_DIR/$SCRIPT"
+    SCRIPT_DEST="$RETROPIE_MENU/$(basename "$SCRIPT")"
 
-    for script in "${SCRIPTS[@]}"; do
-        SCRIPT_SOURCE="$PI_STATION_X_DIR/$script"
-        SCRIPT_DEST="$RETROPIE_MENU/$(basename "$script")"
-
-        echo "Checking if the source script exists at $SCRIPT_SOURCE"
-        if [ -f "$SCRIPT_SOURCE" ]; then
-            echo "Copying $(basename "$script") to $RETROPIE_MENU..."
-            cp "$SCRIPT_SOURCE" "$SCRIPT_DEST"
-            chmod +x "$SCRIPT_DEST"  # Dar permisos de ejecución
-            echo "$(basename "$script") copied successfully!"
-        else
-            echo "ERROR: $(basename "$script") not found at $SCRIPT_SOURCE."
-        fi
-    done
+    echo "Checking if the source script exists at $SCRIPT_SOURCE"
+    if [ -f "$SCRIPT_SOURCE" ]; then
+        echo "Copying PiStation_menu.sh to $RETROPIE_MENU..."
+        cp "$SCRIPT_SOURCE" "$SCRIPT_DEST"
+        chmod +x "$SCRIPT_DEST"  # Dar permisos de ejecución
+        echo "PiStation_menu.sh copied successfully!"
+    else
+        echo "ERROR: PiStation_menu.sh not found at $SCRIPT_SOURCE."
+    fi
 }
 
 # Buscar el tema seleccionado y procesarlo
@@ -115,7 +109,7 @@ if [ "$SELECCIONADO" == "All themes" ]; then
         DESTINO=$(echo "${tema}" | awk '{print $2}')
         process_theme "$REPO_URL" "$DESTINO"
 
-        # Si Pi-Station-X fue seleccionado, copiar los scripts
+        # Si Pi-Station-X fue seleccionado, copiar PiStation_menu.sh
         if [ "$(basename "$DESTINO")" == "Pi-Station-X" ]; then
             copy_customize_script
         fi
@@ -128,7 +122,7 @@ else
         if [ "$(basename "$DESTINO")" == "$SELECCIONADO" ]; then
             process_theme "$REPO_URL" "$DESTINO"
 
-            # Si Pi-Station-X fue seleccionado, copiar los scripts
+            # Si Pi-Station-X fue seleccionado, copiar PiStation_menu.sh
             if [ "$(basename "$DESTINO")" == "Pi-Station-X" ]; then
                 copy_customize_script
             fi
