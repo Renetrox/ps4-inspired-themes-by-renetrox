@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Script: PS4-Inspired Themes by Renetrox
-# Description: Manage and install EmulationStation themes inspired by PS4.
+# Script: PS4-Inspired Themes by Renetrox v3
+# Funciones: Instalar, actualizar y desinstalar temas para EmulationStation con estilo PS4
 
-# Lista de repositorios y carpetas de destino
 TEMAS=(
     "https://github.com/Renetrox/Pi-Station-X $HOME/.emulationstation/themes/Pi-Station-X"
     "https://github.com/Renetrox/Mk1 $HOME/.emulationstation/themes/Mk1"
@@ -13,124 +12,150 @@ TEMAS=(
     "https://github.com/Renetrox/PiStation-RE4 $HOME/.emulationstation/themes/PiStation-RE4"
 )
 
-# Verificar si git está instalado
-if ! command -v git &> /dev/null; then
-    echo "Git is not installed. Please install it before proceeding."
-    exit 1
-fi
-
-# Verificar y crear la carpeta de temas si no existe
-if [ ! -d "$HOME/.emulationstation/themes" ]; then
-    echo "Creating themes directory at $HOME/.emulationstation/themes..."
-    mkdir -p "$HOME/.emulationstation/themes"
-fi
-
-# Crear opciones de menú para el diálogo
-OPCIONES=()
-for i in "${!TEMAS[@]}"; do
-    REPO_URL=$(echo "${TEMAS[$i]}" | awk '{print $1}')
-    DESTINO=$(echo "${TEMAS[$i]}" | awk '{print $2}')
-    OPCIONES+=("$(basename "$DESTINO")" "$REPO_URL $DESTINO")
+# Verificaciones
+for cmd in git dialog; do
+    if ! command -v $cmd &> /dev/null; then
+        echo "Falta el comando '$cmd'. Intenta: sudo apt install $cmd"
+        exit 1
+    fi
 done
-OPCIONES+=("All themes")
-OPCIONES+=("Exit")
 
-# Mostrar el menú usando dialog
-SELECCIONADO=$(dialog --title "Select a theme to install or update" --menu "Use arrows to navigate and press Enter to select:" 15 50 8 "${OPCIONES[@]}" 2>&1 >/dev/tty)
+mkdir -p "$HOME/.emulationstation/themes"
 
-# Verificar si el usuario presionó "Exit"
-if [ "$SELECCIONADO" == "Exit" ]; then
-    echo "Exiting without making changes."
-    exit 0
-fi
+copy_customize_script() {
+    local THEME_DIR="$HOME/.emulationstation/themes/Pi-Station-X"
+    local MENU_DIR="$HOME/RetroPie/retropiemenu"
+    local SCRIPT_SOURCE="$THEME_DIR/layout/PiStation_menu.sh"
+    local SCRIPT_DEST="$MENU_DIR/PiStation_menu.sh"
 
-# Función para procesar los temas
+    mkdir -p "$MENU_DIR"
+
+    if [ -f "$SCRIPT_SOURCE" ]; then
+        cp "$SCRIPT_SOURCE" "$SCRIPT_DEST"
+        chmod +x "$SCRIPT_DEST"
+        echo "✓ PiStation_menu.sh copiado a retropiemenu."
+    else
+        echo "✗ No se encontró PiStation_menu.sh."
+    fi
+}
+
 process_theme() {
-    REPO_URL=$1
-    DESTINO=$2
+    local REPO_URL="$1"
+    local DESTINO="$2"
+    local THEME_NAME
+    THEME_NAME=$(basename "$DESTINO")
 
-    echo "Processing theme: $REPO_URL"
+    echo "Procesando $THEME_NAME..."
 
-    # Si el tema ya está instalado, buscar actualizaciones automáticamente
     if [ -d "$DESTINO/.git" ]; then
-        echo "Theme already installed at $DESTINO."
-        echo "Resetting and cleaning local changes..."
-        cd "$DESTINO" || exit 1
+        echo "Actualizando $THEME_NAME..."
+        cd "$DESTINO" || return
         git fetch --all
         git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
         git clean -fd
-        echo "Pulling latest updates..."
         if git pull; then
-            echo "Theme updated successfully!"
+            echo "✓ $THEME_NAME actualizado."
         else
-            echo "Error updating the theme. Check your internet connection or conflicts."
+            echo "✗ Error al actualizar $THEME_NAME."
         fi
     else
-        # Si el tema no está instalado, clonarlo
-        echo "Installing theme from $REPO_URL..."
-        git clone --progress "$REPO_URL" "$DESTINO"
-        if [ $? -ne 0 ]; then
-            echo "Error cloning the theme $REPO_URL. Check your internet connection."
+        echo "Instalando $THEME_NAME..."
+        git clone "$REPO_URL" "$DESTINO"
+        if [ $? -eq 0 ]; then
+            echo "✓ $THEME_NAME instalado."
         else
-            echo "Theme installed successfully at $DESTINO!"
+            echo "✗ Error al instalar $THEME_NAME."
+            return
         fi
     fi
 
     chmod -R 755 "$DESTINO"
-    echo "Processing $REPO_URL completed."
-}
 
-# Copiar el archivo PiStation_menu.sh si Pi-Station-X es seleccionado
-copy_customize_script() {
-    PI_STATION_X_DIR="$HOME/.emulationstation/themes/Pi-Station-X"
-    RETROPIE_MENU="$HOME/RetroPie/retropiemenu"
-
-    # Archivo a copiar
-    SCRIPT="layout/PiStation_menu.sh"
-    SCRIPT_SOURCE="$PI_STATION_X_DIR/$SCRIPT"
-    SCRIPT_DEST="$RETROPIE_MENU/$(basename "$SCRIPT")"
-
-    echo "Checking if the source script exists at $SCRIPT_SOURCE"
-    if [ -f "$SCRIPT_SOURCE" ]; then
-        echo "Copying PiStation_menu.sh to $RETROPIE_MENU..."
-        cp "$SCRIPT_SOURCE" "$SCRIPT_DEST"
-        chmod +x "$SCRIPT_DEST"  # Dar permisos de ejecución
-        echo "PiStation_menu.sh copied successfully!"
-    else
-        echo "ERROR: PiStation_menu.sh not found at $SCRIPT_SOURCE."
+    if [ "$THEME_NAME" == "Pi-Station-X" ]; then
+        copy_customize_script
     fi
 }
 
-# Buscar el tema seleccionado y procesarlo
-if [ "$SELECCIONADO" == "All themes" ]; then
-    # Procesar todos los temas
-    for tema in "${TEMAS[@]}"; do
-        REPO_URL=$(echo "$tema" | awk '{print $1}')
-        DESTINO=$(echo "${tema}" | awk '{print $2}')
-        process_theme "$REPO_URL" "$DESTINO"
+uninstall_theme() {
+    local DESTINO="$1"
+    local THEME_NAME
+    THEME_NAME=$(basename "$DESTINO")
 
-        # Si Pi-Station-X fue seleccionado, copiar PiStation_menu.sh
-        if [ "$(basename "$DESTINO")" == "Pi-Station-X" ]; then
-            copy_customize_script
-        fi
-    done
-else
-    # Procesar un tema específico
-    for tema in "${TEMAS[@]}"; do
-        REPO_URL=$(echo "$tema" | awk '{print $1}')
-        DESTINO=$(echo "${tema}" | awk '{print $2}')
-        if [ "$(basename "$DESTINO")" == "$SELECCIONADO" ]; then
-            process_theme "$REPO_URL" "$DESTINO"
+    if [ ! -d "$DESTINO" ]; then
+        echo "✗ El tema $THEME_NAME no está instalado."
+        return
+    fi
 
-            # Si Pi-Station-X fue seleccionado, copiar PiStation_menu.sh
-            if [ "$(basename "$DESTINO")" == "Pi-Station-X" ]; then
-                copy_customize_script
+    dialog --yesno "¿Deseas eliminar el tema $THEME_NAME?" 8 50
+    if [ $? -eq 0 ]; then
+        rm -rf "$DESTINO"
+        echo "✓ Tema $THEME_NAME eliminado."
+
+        if [ "$THEME_NAME" == "Pi-Station-X" ]; then
+            local SCRIPT="$HOME/RetroPie/retropiemenu/PiStation_menu.sh"
+            if [ -f "$SCRIPT" ]; then
+                rm "$SCRIPT"
+                echo "✓ PiStation_menu.sh eliminado del menú."
             fi
         fi
-    done
-fi
+    else
+        echo "✗ Operación cancelada."
+    fi
+}
 
-# Mostrar mensaje final
-dialog --msgbox "Operation completed. Please restart EmulationStation to apply the changes." 10 50
+# Menú principal
+OPCIONES=()
+for tema in "${TEMAS[@]}"; do
+    nombre=$(basename "$(echo "$tema" | awk '{print $2}')")
+    OPCIONES+=("$nombre" "$nombre")
+done
+OPCIONES+=("All" "Instalar/Actualizar todos")
+OPCIONES+=("Uninstall" "Desinstalar un tema")
+OPCIONES+=("Exit" "Salir")
 
-echo "Operation completed."
+SELECCION=$(dialog --title "Temas PS4 by Renetrox" --menu "Selecciona una opción:" 20 60 12 "${OPCIONES[@]}" 2>&1 >/dev/tty)
+
+clear
+
+case "$SELECCION" in
+    "All")
+        for tema in "${TEMAS[@]}"; do
+            REPO=$(echo "$tema" | awk '{print $1}')
+            DEST=$(echo "$tema" | awk '{print $2}')
+            process_theme "$REPO" "$DEST"
+        done
+        ;;
+    "Uninstall")
+        OPCIONES_UNINSTALL=()
+        for tema in "${TEMAS[@]}"; do
+            nombre=$(basename "$(echo "$tema" | awk '{print $2}')")
+            OPCIONES_UNINSTALL+=("$nombre" "$nombre")
+        done
+        THEME_TO_REMOVE=$(dialog --title "Desinstalar tema" --menu "Selecciona un tema para eliminar:" 20 60 10 "${OPCIONES_UNINSTALL[@]}" 2>&1 >/dev/tty)
+
+        for tema in "${TEMAS[@]}"; do
+            DEST=$(echo "$tema" | awk '{print $2}')
+            if [ "$(basename "$DEST")" == "$THEME_TO_REMOVE" ]; then
+                uninstall_theme "$DEST"
+                break
+            fi
+        done
+        ;;
+    "Exit")
+        echo "Saliendo..."
+        exit 0
+        ;;
+    *)
+        for tema in "${TEMAS[@]}"; do
+            REPO=$(echo "$tema" | awk '{print $1}')
+            DEST=$(echo "$tema" | awk '{print $2}')
+            if [ "$(basename "$DEST")" == "$SELECCION" ]; then
+                process_theme "$REPO" "$DEST"
+                break
+            fi
+        done
+        ;;
+esac
+
+dialog --msgbox "Operación completada. Reinicia EmulationStation para aplicar los cambios." 8 50
+clear
