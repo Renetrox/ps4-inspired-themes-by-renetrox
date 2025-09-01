@@ -94,6 +94,7 @@ Paso 1: Clonar el repositorio
 Primero, clona este repositorio en tu dispositivo RetroPie. Abre la terminal y ejecuta el siguiente comando:
 
 cd /home/$(whoami)/RetroPie/retropiemenu
+
 git clone https://github.com/Renetrox/ps4-inspired-themes-by-renetrox.git
 
 Esto descargará los archivos del repositorio en el directorio adecuado, sin importar el nombre de usuario de tu dispositivo.
