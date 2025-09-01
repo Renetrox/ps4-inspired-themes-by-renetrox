@@ -7,7 +7,7 @@ TEMAS=(
     "https://github.com/Renetrox/Pi-Station-X $HOME/.emulationstation/themes/Pi-Station-X"
     "https://github.com/Renetrox/Mk1 $HOME/.emulationstation/themes/Mk1"
     "https://github.com/Renetrox/Pi-Station-Batman $HOME/.emulationstation/themes/Pi-Station-Batman"
-    "https://github.com/Renetrox/Pi-Station---MediEvil $HOME/.emulationstation/themes/Pi-Station-MediEvil"
+    "https://github.com/Renetrox/PiStation-Medievil $HOME/.emulationstation/themes/Pi-Station-MediEvil"
     "https://github.com/Renetrox/PiStation-The-Last-of-Us-Part-II--Ellie-Theme $HOME/.emulationstation/themes/PiStation-The-Last-of-Us-Part-II"
     "https://github.com/Renetrox/PiStation-RE4 $HOME/.emulationstation/themes/PiStation-RE4"
 )
