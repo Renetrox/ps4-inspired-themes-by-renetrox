@@ -1,4 +1,9 @@
+
 PS4 Inspired Themes by Renetrox
+<img width="1366" height="768" alt="Captura de pantalla_2024-12-25_12-29-53" src="https://github.com/user-attachments/assets/3ba7ec59-7b11-413b-a1ca-de65173735be" />
+<img width="1366" height="768" alt="Captura de pantalla_2024-03-09_19-05-17" src="https://github.com/user-attachments/assets/cf3e6d40-fb9a-468b-bc40-860601dfc689" />
+<img width="1366" height="768" alt="Captura de pantalla_2024-03-09_19-04-32" src="https://github.com/user-attachments/assets/32c3bd23-f7d8-44d9-aad4-987b5f89e830" />
+<img width="1366" height="768" alt="Captura de pantalla_2024-03-09_19-03-48" src="https://github.com/user-attachments/assets/5efa7164-59b1-4bea-9718-247723d6abc9" />
 
 This repository contains a collection of PS4-inspired themes for EmulationStation on RetroPie. It includes a script to easily install and manage these themes via the RetroPie Menu.
 Requirements
